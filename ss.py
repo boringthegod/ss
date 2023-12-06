@@ -55,11 +55,19 @@ def run_reconftw_and_append(domain, output_path):
     append_to_oui_txt(domain, output_path)
 
 
-def run_web_archive_scan(domain, output_path):
+def run_and_process_curl_command(domain, output_path):
     curl_cmd = f"curl -s \"http://web.archive.org/cdx/search/cdx?url=*.{domain}/*&output=text&fl=original&collapse=urlkey\""
-    curl_output = run_docker_command(curl_cmd)
-    processed_curl_output = "\n".join(process_curl_output(curl_output))
-    append_to_file(os.path.join(output_path, "oui.txt"), processed_curl_output)
+
+    process = subprocess.Popen(curl_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = process.communicate()
+
+    curl_output = output.decode('utf-8', 'ignore')
+
+    processed_curl_output = "\n".join(curl_output.splitlines())
+
+    output_file_path = os.path.join(output_path, "oui.txt")
+    with open(output_file_path, "a") as file:
+        file.write(processed_curl_output)
 
 
 def run_crt_scan(domain, output_path):
@@ -271,7 +279,7 @@ if __name__ == "__main__":
 
     run_with_spinner(lambda: run_reconftw_and_append(domain, output_path), "Scan reconftw in progress")
 
-    run_with_spinner(lambda: run_web_archive_scan(domain, output_path), "Scan Web archive in progress")
+    run_with_spinner(lambda: run_and_process_curl_command(domain, output_path), "Scan Web archive in progress")
 
     run_with_spinner(lambda: run_crt_scan(domain, output_path), "Scan crt.sh in progress")
 
