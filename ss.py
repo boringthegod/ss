@@ -23,7 +23,7 @@ def run_docker_command(command):
             print(f"Error: {error.decode('utf-8')}")
             return None
 
-        return output.decode('utf-8').strip()
+        return output.decode('utf-8', 'ignore').strip()
 
     except Exception as e:
         print(f"Exception occurred: {e}")
