@@ -12,7 +12,7 @@ Combine it with [jsoncrack](https://github.com/AykutSarac/jsoncrack.com) to get 
 
 ![](https://cdn.discordapp.com/attachments/890363963483758644/1182079679633559572/image.png?ex=6583647d&is=6570ef7d&hm=7a5e1bad0f8042993cef26b9cc2440ffa48e0b5a7db7a566bd8d0f60ae564cc3&)
 
-*Full view from: [here](https://cdn.discordapp.com/attachments/890363963483758644/1182079679633559572/image.png)*
+*Full view from: [here](https://cdn.discordapp.com/attachments/846346170971848724/1175393559147450369/jsoncrack.com1.png)*
 
 All subdomains and IPs discovered are also written to their respective files.
 
