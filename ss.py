@@ -78,7 +78,7 @@ def run_crt_scan(domain, output_path):
 
 def get_asn(ip):
     try:
-        result = subprocess.run(['as-lookup', ip], stdout=subprocess.PIPE, text=True, check=True)
+        result = subprocess.run(['as-lookup', ip], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
         if "No routing origin data" in result.stdout:
             return None
         return result.stdout.strip()
@@ -88,10 +88,11 @@ def get_asn(ip):
 
 def get_asn_shadowserver(ip):
     try:
-        result = subprocess.run(['as-lookup', '-s', 'shadowserver', ip], stdout=subprocess.PIPE, text=True,
-                                check=True)
+        result = subprocess.run(['as-lookup', '-s', 'shadowserver', ip], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if result.returncode != 0:
+            return None
         return result.stdout.strip()
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as e:
         return None
 
 
