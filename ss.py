@@ -242,13 +242,13 @@ def upload_file(filepath):
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Recognition tool for multiple domains')
+    parser = argparse.ArgumentParser(description='Recognition tool for sub-domains, IPs and ASNs linked to a domain')
     parser.add_argument('-d', '--domains', type=validate_domain,
-                        help='Specifies a comma-separated list of domain names to be scanned. Example: -d google.com,example.com')
+                        help='Specifies the domain name to be scanned. Example: -d google.com')
     parser.add_argument('-f', '--file', type=str,
-                        help='Specifies a file with one domain per line to be scanned.')
+                        help='Specifies a file with one domain per line to be scanned. Example: -f domains.txt')
     parser.add_argument('-u', '--upload', action='store_true',
-                        help='Activate the upload of results')
+                        help='Activate the upload of results to https://pype.sellan.fr')
     parser.add_argument('-o', '--org', type=str,
                         help='Specifies the organization name for the JSON output. Example: -o Leclerc')
     return parser
