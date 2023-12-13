@@ -42,20 +42,26 @@ All you have to do is run it by putting the **main domain name** after the `-d` 
 
 If, for example, you're running the tool from a VPS and want to **easily retrieve the .JSON file** from your computer, just add the `-u` argument and it will automatically be temporarily hosted on [https://pype.sellan.fr/](https://pype.sellan.fr/) (Free, fast, log-free file hosting) as soon as the scan is complete.
 
+It can also scan multiple domains if you place them all in one file with one domain per line. Place file name after `-f` argument.
+
+Behind the `-o` argument, specify the name of the organization so as to have a JSON rendering that starts from this name and lists the main domains underneath, followed by the scan of each of them.
 
 ```bash
-usage: ss.py [-h] -d DOMAIN [-u]
+usage: ss.py [-h] [-d DOMAINS] [-f FILE] [-u] [-o ORG]
 
 Recognition tool for sub-domains, IPs and ASNs linked to a domain
 
-options:
+optional arguments:
   -h, --help            show this help message and exit
-  -d DOMAIN, --domain DOMAIN
+  -d DOMAINS, --domains DOMAINS
                         Specifies the domain name to be scanned. Example: -d google.com
+  -f FILE, --file FILE  Specifies a file with one domain per line to be scanned. Example: -f domains.txt
   -u, --upload          Activate the upload of results to https://pype.sellan.fr
+  -o ORG, --org ORG     Specifies the organization name for the JSON output. Example: -o Leclerc
 
 Examples:
   ./ss.py -d google.com -u
+  ./ss.py -f domains.txt -o Leclerc -u
 ```
 
 ## Demo
