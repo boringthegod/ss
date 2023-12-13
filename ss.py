@@ -204,13 +204,20 @@ def parse_text_to_json(file_path):
     return asn_data
 
 
-def validate_domain(domain):
-    domain = re.sub(r'^https?://', '', domain)
+def validate_domain(domain_string):
+    domains = domain_string.split(',')
+    validated_domains = []
+    for domain in domains:
+        # Suppression des préfixes HTTP/HTTPS
+        domain = re.sub(r'^https?://', '', domain)
 
-    if len(domain.split('.')) > 2:
-        raise argparse.ArgumentTypeError("Error: the scan can only start from the main domain.")
+        # Validation supplémentaire, si nécessaire
+        if len(domain.split('.')) > 2:
+            raise argparse.ArgumentTypeError(f"Invalid domain: {domain}")
 
-    return domain
+        validated_domains.append(domain)
+
+    return validated_domains
 
 
 def process_curl_output(curl_output):
@@ -235,11 +242,15 @@ def upload_file(filepath):
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Recognition tool for sub-domains, IPs and ASNs linked to a domain')
-    parser.add_argument('-d', '--domain', required=True, type=validate_domain,
-                        help='Specifies the domain name to be scanned. Example: -d google.com')
+    parser = argparse.ArgumentParser(description='Recognition tool for multiple domains')
+    parser.add_argument('-d', '--domains', type=validate_domain,
+                        help='Specifies a comma-separated list of domain names to be scanned. Example: -d google.com,example.com')
+    parser.add_argument('-f', '--file', type=str,
+                        help='Specifies a file with one domain per line to be scanned.')
     parser.add_argument('-u', '--upload', action='store_true',
-                        help='Activate the upload of results to https://pype.sellan.fr')
+                        help='Activate the upload of results')
+    parser.add_argument('-o', '--org', type=str,
+                        help='Specifies the organization name for the JSON output. Example: -o Leclerc')
     return parser
 
 
@@ -256,129 +267,148 @@ if __name__ == "__main__":
         print(e, file=sys.stderr)
         sys.exit(1)
 
-    domain = args.domain
+    # Gérer plusieurs domaines
+    domains = args.domains if args.domains else []
+
+    # Lire les domaines depuis un fichier, si spécifié
+    if args.file:
+        with open(args.file, 'r') as file:
+            domains.extend([line.strip() for line in file if line.strip()])
+    org_name = args.org
+    org_data = {org_name: []} if org_name else None
     upload = args.upload
 
-    create_recon_directory()
-
-    nomjson = domain
-    output_path = create_directory_structure(domain)
-
-    docker_cmd = f"docker run --rm hessman/rcrt -t {domain} -r -l 1 -d cloudflare.com cloudflaressl.com"
-    docker_output = run_with_spinner(lambda: run_docker_command(docker_cmd), "Scan rcrt in progress")
-    with open(os.path.join(output_path, "oui.txt"), "w") as file:
-        file.write(docker_output)
-
-    subfinder_output = run_with_spinner(lambda: run_subfinder_and_tools(domain), "Scan subfinder in progress")
-    with open(os.path.join(output_path, "oui.txt"), "a") as file:
-        file.write(subfinder_output)
-
-    sudomy_output = run_with_spinner(lambda: run_sudomy_scan(domain), "Scan sudomy in progress")
-
-    append_to_file(os.path.join(output_path, "oui.txt"), open(os.path.join(output_path, "exc2.txt"), "r").read())
-    find_and_append_subdomains("output", os.path.join(output_path, "oui.txt"))
-
-    run_with_spinner(lambda: run_reconftw_and_append(domain, output_path), "Scan reconftw in progress")
-
-    run_with_spinner(lambda: run_and_process_curl_command(domain, output_path), "Scan Web archive in progress")
-
-    run_with_spinner(lambda: run_crt_scan(domain, output_path), "Scan crt.sh in progress")
-
-    with open(os.path.join(output_path, "oui.txt"), 'r') as file:
-        content = file.read()
-
-    urls = re.findall(r'\b(?:[\w-]+\.)+{}\b'.format({domain}.pop()), content)
-
-    unique_urls = list(set(urls))
-
-    unique_urls.sort()
-
-    with open(os.path.join(output_path, 'urls_uniques.txt'), 'w') as file:
-        for url in unique_urls:
-            file.write(url + '\n')
-
-    with open(os.path.join(output_path, 'urls_uniques.txt'), 'r') as file:
-        domains = [line.strip() for line in file if line.strip()]
-
-    ip_domain_map = {}
-
-    asn_ip_domain_map = {}
-
     for domain in domains:
-        try:
-            ip = socket.gethostbyname(domain)
-            if ip in ip_domain_map:
-                ip_domain_map[ip].append(domain)
-            else:
-                ip_domain_map[ip] = [domain]
-        except socket.gaierror:
-            pass
 
-    asn_ip_domain_map_intermediate = {}
+        create_recon_directory()
 
-    ips_sans_asn = []
+        nomjson = domain
+        output_path = create_directory_structure(domain)
 
-    for ip, domains in ip_domain_map.items():
-        full_asn_string = get_asn(ip)
-        if full_asn_string:
-            asn_only = extract_asn(full_asn_string)
-            if asn_only and asn_only not in asn_ip_domain_map_intermediate:
-                asn_ip_domain_map_intermediate[asn_only] = []
-            asn_ip_domain_map_intermediate[asn_only].append((ip, domains))
-        else:
-            ips_sans_asn.append(ip)
+        docker_cmd = f"docker run --rm hessman/rcrt -t {domain} -r -l 1 -d cloudflare.com cloudflaressl.com"
+        docker_output = run_with_spinner(lambda: run_docker_command(docker_cmd), "Scan rcrt in progress")
+        with open(os.path.join(output_path, "oui.txt"), "w") as file:
+            file.write(docker_output)
 
-    for ip in ips_sans_asn:
-        asn_shadowserver = get_asn_shadowserver(ip)
-        if asn_shadowserver:
-            asn_only = extract_asn(asn_shadowserver)
-            if asn_only:
-                if asn_only not in asn_ip_domain_map_intermediate:
+        subfinder_output = run_with_spinner(lambda: run_subfinder_and_tools(domain), "Scan subfinder in progress")
+        with open(os.path.join(output_path, "oui.txt"), "a") as file:
+            file.write(subfinder_output)
+
+        sudomy_output = run_with_spinner(lambda: run_sudomy_scan(domain), "Scan sudomy in progress")
+
+        append_to_file(os.path.join(output_path, "oui.txt"), open(os.path.join(output_path, "exc2.txt"), "r").read())
+        find_and_append_subdomains("output", os.path.join(output_path, "oui.txt"))
+
+        run_with_spinner(lambda: run_reconftw_and_append(domain, output_path), "Scan reconftw in progress")
+
+        run_with_spinner(lambda: run_and_process_curl_command(domain, output_path), "Scan Web archive in progress")
+
+        run_with_spinner(lambda: run_crt_scan(domain, output_path), "Scan crt.sh in progress")
+
+        with open(os.path.join(output_path, "oui.txt"), 'r') as file:
+            content = file.read()
+
+        urls = re.findall(r'\b(?:[\w-]+\.)+{}\b'.format({domain}.pop()), content)
+
+        unique_urls = list(set(urls))
+
+        unique_urls.sort()
+
+        with open(os.path.join(output_path, 'urls_uniques.txt'), 'w') as file:
+            for url in unique_urls:
+                file.write(url + '\n')
+
+        with open(os.path.join(output_path, 'urls_uniques.txt'), 'r') as file:
+            domains = [line.strip() for line in file if line.strip()]
+
+        ip_domain_map = {}
+
+        asn_ip_domain_map = {}
+
+        for domain in domains:
+            try:
+                ip = socket.gethostbyname(domain)
+                if ip in ip_domain_map:
+                    ip_domain_map[ip].append(domain)
+                else:
+                    ip_domain_map[ip] = [domain]
+            except socket.gaierror:
+                pass
+
+        asn_ip_domain_map_intermediate = {}
+
+        ips_sans_asn = []
+
+        for ip, domains in ip_domain_map.items():
+            full_asn_string = get_asn(ip)
+            if full_asn_string:
+                asn_only = extract_asn(full_asn_string)
+                if asn_only and asn_only not in asn_ip_domain_map_intermediate:
                     asn_ip_domain_map_intermediate[asn_only] = []
-                asn_ip_domain_map_intermediate[asn_only].append((ip, ip_domain_map[ip]))
+                asn_ip_domain_map_intermediate[asn_only].append((ip, domains))
+            else:
+                ips_sans_asn.append(ip)
 
-    with open(os.path.join(output_path, 'asn_ip_domain_map_clean.txt'), 'w') as file:
-        for asn, ip_domains in asn_ip_domain_map_intermediate.items():
-            file.write(f"ASN: {asn}\n")
-            for ip, domains in ip_domains:
-                domain_list = ', '.join(domains)
-                file.write(f"  IP: {ip} - Domaines liés: {domain_list}\n")
-            file.write("\n")
+        for ip in ips_sans_asn:
+            asn_shadowserver = get_asn_shadowserver(ip)
+            if asn_shadowserver:
+                asn_only = extract_asn(asn_shadowserver)
+                if asn_only:
+                    if asn_only not in asn_ip_domain_map_intermediate:
+                        asn_ip_domain_map_intermediate[asn_only] = []
+                    asn_ip_domain_map_intermediate[asn_only].append((ip, ip_domain_map[ip]))
 
-    file_path = 'asn_ip_domain_map_clean.txt'
+        with open(os.path.join(output_path, 'asn_ip_domain_map_clean.txt'), 'w') as file:
+            for asn, ip_domains in asn_ip_domain_map_intermediate.items():
+                file.write(f"ASN: {asn}\n")
+                for ip, domains in ip_domains:
+                    domain_list = ', '.join(domains)
+                    file.write(f"  IP: {ip} - Domaines liés: {domain_list}\n")
+                file.write("\n")
 
-    parsed_json = parse_text_to_json(file_path)
+        file_path = 'asn_ip_domain_map_clean.txt'
 
-    json_filename = f"{nomjson}.ASN.json"
-    json_file_path = os.path.join(output_path, json_filename)
+        parsed_json = parse_text_to_json(file_path)
 
-    with open(json_file_path, 'w') as json_file:
-        json.dump(parsed_json, json_file, indent=4)
+        json_filename = f"{nomjson}.ASN.json"
+        json_file_path = os.path.join(output_path, json_filename)
 
-    print(f"The data have been written in {json_filename}")
+        with open(json_file_path, 'w') as json_file:
+            json.dump(parsed_json, json_file, indent=4)
 
-    files_to_delete = [os.path.join(output_path, 'asn_ip_domain_map_clean.txt'),
-                       os.path.join(output_path, 'exc2.txt'),
-                       os.path.join(output_path, 'oui.txt')]
-    delete_files(files_to_delete)
+        print(f"The data have been written in {json_filename}")
 
-    delete_directories(["output", "Recon"])
+        files_to_delete = [os.path.join(output_path, 'asn_ip_domain_map_clean.txt'),
+                        os.path.join(output_path, 'exc2.txt'),
+                        os.path.join(output_path, 'oui.txt')]
+        delete_files(files_to_delete)
 
-    with open(json_file_path, 'r') as file:
-        data = json.load(file)
+        delete_directories(["output", "Recon"])
 
-    nombre_asn = len(data)
-    nombre_ips = sum(len(asn) for asn in data.values())
-    nombre_domaines = sum(len(ip['SubDomains']) for asn in data.values() for ip in asn)
+        with open(json_file_path, 'r') as file:
+            data = json.load(file)
 
-    output_file_path4 = os.path.join(output_path, 'ips_unique.txt')
-    extract_unique_ips(json_file_path, output_file_path4)
+        nombre_asn = len(data)
+        nombre_ips = sum(len(asn) for asn in data.values())
+        nombre_domaines = sum(len(ip['SubDomains']) for asn in data.values() for ip in asn)
 
-    print(colored(f"Number of ASNs found : {nombre_asn}", 'red'))
-    print(colored(f"Number of IPs found : {nombre_ips}", 'green'))
-    print(colored(f"Number of subdomains found : {nombre_domaines}", 'blue'))
+        output_file_path4 = os.path.join(output_path, 'ips_unique.txt')
+        extract_unique_ips(json_file_path, output_file_path4)
 
-    if upload:
-        url = upload_file(json_file_path)
-        if url:
-            print(f"File uploaded successfully : {url}")
+        print(colored(f"Number of ASNs found : {nombre_asn}", 'red'))
+        print(colored(f"Number of IPs found : {nombre_ips}", 'green'))
+        print(colored(f"Number of subdomains found : {nombre_domaines}", 'blue'))
+
+        if upload:
+            url = upload_file(json_file_path)
+            if url:
+                print(f"File uploaded successfully : {url}")
+
+        if org_name:
+            with open(json_file_path, 'r') as json_file:
+                domain_data = json.load(json_file)
+            clean_domain = domain.lstrip('www.') 
+            org_data[org_name].append({clean_domain: domain_data})
+    if org_data:
+        with open(f"{org_name}.json", 'w') as json_file:
+            json.dump(org_data, json_file, indent=4)
