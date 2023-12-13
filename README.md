@@ -66,4 +66,17 @@ Examples:
 
 ## Demo
 
+### Example 1 : Classic domain scan
 ![](https://cdn.discordapp.com/attachments/890363963483758644/1182080572827390023/image.png)
+
+### Example 2 : Scanning an entire organization with multiple domains
+
+Example for scanning an entire organization. For example, you have this list of domains: 
+
+![](https://cdn.discordapp.com/attachments/890363963483758644/1184499530901766164/carbon.png)
+
+You can scan it with the following command: 
+
+![](https://cdn.discordapp.com/attachments/890363963483758644/1184512003813937192/carbon1.png)
+
+And it produces a complete JSON of the organization, which you can find [here](https://cdn.discordapp.com/attachments/890363963483758644/1184512425819639959/Norauto.json)
