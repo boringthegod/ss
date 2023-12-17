@@ -267,10 +267,8 @@ if __name__ == "__main__":
         print(e, file=sys.stderr)
         sys.exit(1)
 
-    # Gérer plusieurs domaines
     domains = args.domains if args.domains else []
 
-    # Lire les domaines depuis un fichier, si spécifié
     if args.file:
         with open(args.file, 'r') as file:
             domains.extend([line.strip() for line in file if line.strip()])
