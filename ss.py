@@ -410,3 +410,14 @@ if __name__ == "__main__":
     if org_data:
         with open(f"{org_name}.json", 'w') as json_file:
             json.dump(org_data, json_file, indent=4)
+
+
+    if upload and org_name:
+        org_json_path = f"{org_name}.json"
+        if os.path.exists(org_json_path):
+            url = upload_file(org_json_path)
+            if url:
+                print(f"Complete JSON file of the organization uploaded successfully : {url}")
+        else:
+            print(f"The JSON file for organization {org_name} does not exist or could not be found.")
+
