@@ -36,6 +36,16 @@ All subdomains and IPs discovered are also written to their respective files.
 
 - You need to make the crt.sh file executable : `chmod +x crt.sh`
 
+## or with Docker
+
+`docker pull ghcr.io/boringthegod/ss:latest`
+
+Then run the tool, **remembering to set the -u argument to get the output results**, as the docker closes at the end of the scan.
+
+`docker run -it --privileged ghcr.io/boringthegod/ss:latest -d google.com -u`
+
+The **"privileged"** option is mandatory, as this docker will launch Dockers during the scan and therefore needs these permissions.
+
 # Usage
 
 All you have to do is run it by putting the **main domain name** after the `-d` argument 
