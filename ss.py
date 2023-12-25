@@ -413,6 +413,34 @@ if __name__ == "__main__":
         with open(f"{org_name}.json", 'w') as json_file:
             json.dump(org_data, json_file, indent=4)
 
+        # Début du traitement du fichier JSON pour extraire les sous-domaines et les IPs
+        jsonorg_file_path = f"{org_name}.json"
+        all_subdomains = set()
+        all_ips = set()
+
+        with open(jsonorg_file_path, 'r') as file:
+            data = json.load(file)
+            for org, domains in data.items():
+                for domain_info in domains:
+                    for domain, asns in domain_info.items():
+                        all_subdomains.add(domain)
+                        for asn, ips in asns.items():
+                            for ip_info in ips:
+                                ip = ip_info["IP"]
+                                all_ips.add(ip)
+                                for subdomain in ip_info.get("SubDomains", []):
+                                    all_subdomains.add(subdomain)
+
+        sorted_ips = sorted(all_ips, key=lambda ip: tuple(int(part) for part in ip.split('.')))
+
+        with open(f"{org_name}_allsubdomainurl.txt", 'w') as file:
+            for subdomain in sorted(all_subdomains):
+                file.write(subdomain + '\n')
+
+        with open(f"{org_name}_allips.txt", 'w') as file:
+            for ip in sorted_ips:
+                file.write(ip + '\n')
+
 
     if upload and org_name:
         org_json_path = f"{org_name}.json"
