@@ -396,11 +396,13 @@ if __name__ == "__main__":
         print(colored(f"Number of ASNs found : {nombre_asn}", 'red'))
         print(colored(f"Number of IPs found : {nombre_ips}", 'green'))
         print(colored(f"Number of subdomains found : {nombre_domaines}", 'blue'))
+        print()
 
         if upload:
             url = upload_file(json_file_path)
             if url:
                 print(f"File uploaded successfully : {url}")
+                print()
 
         if org_name:
             with open(json_file_path, 'r') as json_file:
