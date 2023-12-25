@@ -413,7 +413,6 @@ if __name__ == "__main__":
         with open(f"{org_name}.json", 'w') as json_file:
             json.dump(org_data, json_file, indent=4)
 
-        # Début du traitement du fichier JSON pour extraire les sous-domaines et les IPs
         jsonorg_file_path = f"{org_name}.json"
         all_subdomains = set()
         all_ips = set()
