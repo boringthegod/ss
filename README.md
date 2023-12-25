@@ -44,6 +44,8 @@ Then run the tool, **remembering to set the -u argument to get the output result
 
 `docker run -it --privileged ghcr.io/boringthegod/ss:latest -d google.com -u`
 
+or full scan for an organization : `docker run -it --privileged -v /absolute/path/to/norautodomains.txt:/root/ss/norautodomains.txt ghcr.io/boringthegod/ss -f norautodomains.txt -o Norauto -u`
+
 The **"privileged"** option is mandatory, as this docker will launch Dockers during the scan and therefore needs these permissions.
 
 # Usage
