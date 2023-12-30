@@ -11,6 +11,8 @@ import socket
 import json
 import shutil
 import requests
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 from termcolor import colored
 from halo import Halo
 
@@ -98,18 +100,24 @@ def get_asn_shadowserver(ip):
         return None
 
 
+def tester_sous_domaine(sous_domaine, sortie, verrou):
+    for protocole in ['http://', 'https://']:
+        url = protocole + sous_domaine
+        try:
+            response = requests.get(url, timeout=5)
+            with verrou:
+                sortie.write(url + '\n')
+            break
+        except requests.RequestException:
+            continue
+
 def tester_sous_domaines(fichier, fichier_sortie):
+    verrou = Lock()
     with open(fichier, 'r') as file, open(fichier_sortie, 'w') as sortie:
-        for ligne in file:
-            sous_domaine = ligne.strip()
-            for protocole in ['http://', 'https://']:
-                url = protocole + sous_domaine
-                try:
-                    response = requests.get(url, timeout=5)
-                    sortie.write(url + '\n')
-                    break
-                except requests.RequestException:
-                    continue
+        sous_domaines = [ligne.strip() for ligne in file]
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            [executor.submit(tester_sous_domaine, sd, sortie, verrou) for sd in sous_domaines]
+
 
 
 def find_and_append_subdomains(output_dir, filename):
@@ -477,6 +485,8 @@ if __name__ == "__main__":
                 f"gowitness --disable-db --fullpage file -f {f'{org_name}_valid_subdomains.txt'}", shell=True,
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             run_with_spinner(gowitness_command, "Screenshots in progress...")
+
+            
 
         if validsubdo and zipscreenshot and gowitness:
             def zip_and_upload():
