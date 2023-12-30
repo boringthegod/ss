@@ -10,8 +10,10 @@ import argparse
 import socket
 import json
 import shutil
+import requests
 from termcolor import colored
 from halo import Halo
+
 
 
 def run_docker_command(command):
@@ -94,6 +96,20 @@ def get_asn_shadowserver(ip):
         return result.stdout.strip()
     except subprocess.CalledProcessError as e:
         return None
+
+
+def tester_sous_domaines(fichier, fichier_sortie):
+    with open(fichier, 'r') as file, open(fichier_sortie, 'w') as sortie:
+        for ligne in file:
+            sous_domaine = ligne.strip()
+            for protocole in ['http://', 'https://']:
+                url = protocole + sous_domaine
+                try:
+                    response = requests.get(url, timeout=5)
+                    sortie.write(url + '\n')
+                    break
+                except requests.RequestException:
+                    continue
 
 
 def find_and_append_subdomains(output_dir, filename):
@@ -219,6 +235,8 @@ def validate_domain(domain_string):
 
     return validated_domains
 
+def zip_screenshots(output_directory, zip_name):
+    shutil.make_archive(zip_name, 'zip', output_directory)
 
 def process_curl_output(curl_output):
     lines = curl_output.splitlines()
@@ -231,7 +249,7 @@ def process_curl_output(curl_output):
 
 
 def upload_file(filepath):
-    upload_command = f"curl -T {filepath} https://pype.sellan.fr"
+    upload_command = f"curl -s -T {filepath} https://pype.sellan.fr"
     try:
         result = subprocess.run(upload_command, shell=True, stdout=subprocess.PIPE, text=True, check=True)
         output_lines = result.stdout.strip().split('\n')
@@ -251,6 +269,12 @@ def parse_arguments():
                         help='Activate the upload of results to https://pype.sellan.fr')
     parser.add_argument('-o', '--org', type=str,
                         help='Specifies the organization name for the JSON output. Example: -o Leclerc')
+    parser.add_argument('-vs', '--validsubdo', action='store_true',
+                        help='Do an additional scan to get only the subdomains that respond')
+    parser.add_argument('-gw', '--gowitness', action='store_true',
+                        help='Activate Gowitness for screenshotting the webpages of valid subdomains')
+    parser.add_argument('-zs', '--zipscreenshot', action='store_true',
+                        help='Zip the screenshots taken by Gowitness and upload them to pype.sellan.fr')
     return parser
 
 
@@ -275,6 +299,9 @@ if __name__ == "__main__":
     org_name = args.org
     org_data = {org_name: []} if org_name else None
     upload = args.upload
+    validsubdo = args.validsubdo
+    gowitness = args.gowitness
+    zipscreenshot = args.zipscreenshot
 
     for domain in domains:
 
@@ -407,7 +434,7 @@ if __name__ == "__main__":
         if org_name:
             with open(json_file_path, 'r') as json_file:
                 domain_data = json.load(json_file)
-            clean_domain = domain.lstrip('www.') 
+            clean_domain = domain.lstrip('www.')
             org_data[org_name].append({clean_domain: domain_data})
     if org_data:
         with open(f"{org_name}.json", 'w') as json_file:
@@ -440,6 +467,31 @@ if __name__ == "__main__":
             for ip in sorted_ips:
                 file.write(ip + '\n')
 
+        if validsubdo:
+            run_with_spinner(
+                lambda: tester_sous_domaines(f"{org_name}_allsubdomainurl.txt", f"{org_name}_valid_subdomains.txt"),
+                "Subdomain cleanup in progress...")
+
+        if validsubdo and gowitness:
+            gowitness_command = lambda: subprocess.run(
+                f"gowitness --disable-db --fullpage file -f {f'{org_name}_valid_subdomains.txt'}", shell=True,
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            run_with_spinner(gowitness_command, "Screenshots in progress...")
+
+        if validsubdo and zipscreenshot and gowitness:
+            def zip_and_upload():
+                screenshots_directory = "screenshots"
+                zip_name = f"{org_name}_screenshots"
+                zip_screenshots(screenshots_directory, zip_name)
+                zip_file_path = f"{zip_name}.zip"
+                return upload_file(zip_file_path)
+
+
+            upload_url = run_with_spinner(zip_and_upload, "Archiving and uploading screenshots in progress...")
+            if upload_url:
+                print(f"Screenshot ZIP file uploaded successfully : {upload_url}")
+            else:
+                print("ZIP file upload failed.")
 
     if upload and org_name:
         org_json_path = f"{org_name}.json"
