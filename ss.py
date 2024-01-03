@@ -232,11 +232,9 @@ def validate_domain(domain_string):
     domains = domain_string.split(',')
     validated_domains = []
     for domain in domains:
-        # Suppression des préfixes HTTP/HTTPS
         domain = re.sub(r'^https?://', '', domain)
 
-        # Validation supplémentaire, si nécessaire
-        if len(domain.split('.')) > 2:
+        if domain.count('.') < 1:
             raise argparse.ArgumentTypeError(f"Invalid domain: {domain}")
 
         validated_domains.append(domain)
