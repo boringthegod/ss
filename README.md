@@ -26,7 +26,7 @@ All subdomains and IPs discovered are also written to their respective files.
 
 - Install python3 dependencies : `pip3 install -r requirements.txt`
 
-- Have [httpx](https://github.com/projectdiscovery/httpx#installation-instructions) (On several distros, you'll have the wrong **httpx binary installed by default**, so `sudo apt remove python3-httpx` and install the correct httpx, [dnxs](https://github.com/projectdiscovery/dnsx#installation-instructions) and [subfinder](https://github.com/projectdiscovery/subfinder#installation) installed 
+- Have [httpx](https://github.com/projectdiscovery/httpx#installation-instructions) (On several distros, you'll have the wrong **httpx binary installed by default**, so `sudo apt remove python3-httpx` and install the correct httpx), [dnxs](https://github.com/projectdiscovery/dnsx#installation-instructions) and [subfinder](https://github.com/projectdiscovery/subfinder#installation) installed 
 
 - [reconftw](https://github.com/six2dez/reconftw) docker image : `docker pull six2dez/reconftw:main`
 
