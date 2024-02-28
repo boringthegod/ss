@@ -83,10 +83,14 @@ Examples:
 
 Example for scanning an entire organization. For example, you have this list of domains: 
 
-![](https://cdn.discordapp.com/attachments/890363963483758644/1184499530901766164/carbon.png)
+![](https://cdn.discordapp.com/attachments/890363963483758644/1184499530901766164/carbon.png?ex=65e87b27&is=65d60627&hm=8427a6c4f74bd06814ca187f0ab705cc2446529c9d31697a46dd4b6f952977bc&
+)
+
 
 You can scan it with the following command: 
 
-![](https://cdn.discordapp.com/attachments/890363963483758644/1184512003813937192/carbon1.png)
+![](https://cdn.discordapp.com/attachments/890363963483758644/1184512003813937192/carbon1.png?ex=65e886c4&is=65d611c4&hm=b871fc0a310215cd005a94865548a3bb18c976c74e737a4e6217339563e0bd2f&
+)
+
 
 And it produces a complete JSON of the organization, which you can find [here](https://cdn.discordapp.com/attachments/890363963483758644/1184512425819639959/Norauto.json)
