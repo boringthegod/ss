@@ -12,8 +12,6 @@ Combine it with [jsoncrack](https://github.com/AykutSarac/jsoncrack.com) to get 
 
 ![](https://cdn.discordapp.com/attachments/890363963483758644/1182079679633559572/image.png?ex=6583647d&is=6570ef7d&hm=7a5e1bad0f8042993cef26b9cc2440ffa48e0b5a7db7a566bd8d0f60ae564cc3&)
 
-*Full view from: [here](https://cdn.discordapp.com/attachments/846346170971848724/1175393559147450369/jsoncrack.com1.png)*
-
 All subdomains and IPs discovered are also written to their respective files.
 
 # Requirements
@@ -26,7 +24,7 @@ All subdomains and IPs discovered are also written to their respective files.
 
 - Install python3 dependencies : `pip3 install -r requirements.txt`
 
-- Have [httpx](https://github.com/projectdiscovery/httpx#installation-instructions) (On several distros, you'll have the wrong **httpx binary installed by default**, so `sudo apt remove python3-httpx` and install the correct httpx), [dnxs](https://github.com/projectdiscovery/dnsx#installation-instructions) and [subfinder](https://github.com/projectdiscovery/subfinder#installation) installed 
+- Have [httpx](https://github.com/projectdiscovery/httpx#installation-instructions) (On several distros, you'll have the wrong **httpx binary installed by default**, so `sudo apt remove python3-httpx` and install the correct httpx), [dnsx](https://github.com/projectdiscovery/dnsx#installation-instructions) and [subfinder](https://github.com/projectdiscovery/subfinder#installation) installed 
 
 - [reconftw](https://github.com/six2dez/reconftw) docker image : `docker pull six2dez/reconftw:main`
 
