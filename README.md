@@ -10,7 +10,7 @@ It **removes subdomains that no longer exist**, and **discovers related IPs and 
 
 Combine it with [jsoncrack](https://github.com/AykutSarac/jsoncrack.com) to get a global view of an organization's assets: :
 
-![](https://cdn.discordapp.com/attachments/890363963483758644/1182079679633559572/image.png?ex=6583647d&is=6570ef7d&hm=7a5e1bad0f8042993cef26b9cc2440ffa48e0b5a7db7a566bd8d0f60ae564cc3&)
+![](https://beeimg.com/images/g39659939472.png)
 
 All subdomains and IPs discovered are also written to their respective files.
 
@@ -77,19 +77,17 @@ Examples:
 ## Demo
 
 ### Example 1 : Classic domain scan
-![](https://cdn.discordapp.com/attachments/890363963483758644/1182080572827390023/image.png)
-
+![](https://beeimg.com/images/x29903315234.png)
 ### Example 2 : Scanning an entire organization with multiple domains
 
 Example for scanning an entire organization. For example, you have this list of domains: 
 
-![](https://cdn.discordapp.com/attachments/890363963483758644/1184499530901766164/carbon.png?ex=65e87b27&is=65d60627&hm=8427a6c4f74bd06814ca187f0ab705cc2446529c9d31697a46dd4b6f952977bc&
-)
+![](https://beeimg.com/images/z59292267833.png)
 
 
 You can scan it with the following command: 
 
-![](https://cdn.discordapp.com/attachments/890363963483758644/1184512003813937192/carbon1.png?ex=65e886c4&is=65d611c4&hm=b871fc0a310215cd005a94865548a3bb18c976c74e737a4e6217339563e0bd2f&
+![](https://beeimg.com/images/x29903315234.png)
 )
 
 
