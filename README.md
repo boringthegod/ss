@@ -87,8 +87,7 @@ Example for scanning an entire organization. For example, you have this list of 
 
 You can scan it with the following command: 
 
-![](https://beeimg.com/images/x29903315234.png)
-)
+![](https://i.ibb.co/L8Ymc8f/carbon1.png)
 
 
 And it produces a complete JSON of the organization, which you can find [here](https://cdn.discordapp.com/attachments/890363963483758644/1184512425819639959/Norauto.json)
