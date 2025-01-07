@@ -120,14 +120,17 @@ def tester_sous_domaines(fichier, fichier_sortie):
 
 
 
-def find_and_append_subdomains(output_dir, filename):
-    pattern = os.path.join(output_dir, "*", "*", "subdomain.txt")
-    subdomain_files = glob.glob(pattern)
+def find_and_append_subdomains(output_dir, domain, filename):
+    pattern = os.path.join(output_dir, "*", domain, "subdomain.txt")
 
+    subdomain_files = glob.glob(pattern)
     if subdomain_files:
-        with open(subdomain_files[0], "r") as file:
-            content = file.read()
-            append_to_file(filename, content)
+        for sub_file in subdomain_files:
+            with open(sub_file, "r") as file:
+                content = file.read()
+                append_to_file(filename, content)
+    else:
+        print(f"Aucun subdomain.txt trouvé pour le domaine : {domain}")
 
 
 def run_with_spinner(command, spinner_text):
@@ -328,7 +331,7 @@ if __name__ == "__main__":
         sudomy_output = run_with_spinner(lambda: run_sudomy_scan(domain), "Scan sudomy in progress")
 
         append_to_file(os.path.join(output_path, "oui.txt"), open(os.path.join(output_path, "exc2.txt"), "r").read())
-        find_and_append_subdomains("output", os.path.join(output_path, "oui.txt"))
+        find_and_append_subdomains("output", domain, os.path.join(output_path, "oui.txt"))
 
         run_with_spinner(lambda: run_reconftw_and_append(domain, output_path), "Scan reconftw in progress")
 
