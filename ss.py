@@ -15,6 +15,8 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from termcolor import colored
 from halo import Halo
+import tldextract
+
 
 
 
@@ -443,7 +445,10 @@ if __name__ == "__main__":
         if org_name:
             with open(json_file_path, 'r') as json_file:
                 domain_data = json.load(json_file)
-            clean_domain = domain.lstrip('www.')
+        
+            extracted = tldextract.extract(domain)
+            clean_domain = f"{extracted.domain}.{extracted.suffix}"
+        
             org_data[org_name].append({clean_domain: domain_data})
     if org_data:
         with open(f"{org_name}.json", 'w') as json_file:
