@@ -1,3 +1,4 @@
 halo
 aslookup
 requests
+tldextract
